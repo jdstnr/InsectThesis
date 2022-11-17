@@ -21,6 +21,15 @@ insect_data <- read.csv("../data/identification.csv") %>%
   dplyr::mutate(date = as.factor(date)) 
 
 
+abund_avg <- read.csv("../data/abundance_avgs.csv") %>%
+  dplyr::mutate(order = as.factor(order)) %>%
+  dplyr::mutate(order = factor(order, levels = c("Siphonaptera", "Psocodea", "Acari", "Araneae", "Collembola", "Coleoptera", "Thysanoptera", "Hemiptera", "Hymenoptera", "Diptera"))) %>%
+  dplyr::mutate(date = factor(date, levels = c("25-Jun", "10-Jul", "23-Jul", "7-Aug")))
+
+div_avg <- read.csv("../data/diversity_avgs.csv") %>%
+  dplyr::mutate(order = factor(order, levels = c("Siphonaptera", "Psocodea", "Acari", "Araneae", "Collembola", "Coleoptera", "Thysanoptera", "Hemiptera", "Hymenoptera", "Diptera"))) %>%
+  dplyr::mutate(date = factor(date, levels = c("25-Jun", "10-Jul", "23-Jul", "7-Aug")))
+
 ```
 
 Code below for diversity graph with ADDED position values
@@ -132,35 +141,42 @@ unique_time_dodge + facet_grid(cols = vars(date)) +
 Code below for abundance and diversity graphs faceted by date with AVERAGED position values.
 
 ```{r time faceted abundance data, fig.width= 8, fig.height = 4}
-all_dodge + facet_grid(cols = vars(date)) +
-  theme_bw()
-
-#ggsave("abundance_date.png", width = 8, height = 4, path = "../figs")
-
-unique_time_insects <- insect_data %>%
-  dplyr::select(date, order, family, morphospecies, level) %>%
-  dplyr::distinct() %>%
-  dplyr::mutate(order = as.factor(order)) %>%
-  dplyr::mutate(order = factor(order, levels = c("siphonaptera", "psocodea", "acari", "araneae", "collembola", "coleoptera", "thysanoptera", "hemiptera", "hymenoptera", "diptera"))) %>%
-  dplyr::mutate(date = factor(date, levels = c("25-Jun", "10-Jul", "23-Jul", "7-Aug")))
-
-
-unique_time_dodge <- ggplot2::ggplot(data = unique_time_insects) +
-  geom_bar(aes(y = order,
+ab_plot <- ggplot2::ggplot(data = abund_avg) +
+  geom_col(aes(x = avg,
+               y = order,
                fill = level),
-           position = position_dodge2()) +
+           position = position_dodge()) +
   labs(y = "Order/Subclass",
-       x = "# Morphospecies",
+       x = "Average # Observations",
        fill = "Level") +
-  scale_x_continuous(breaks = seq(0,20,4)) +
+  scale_x_continuous(breaks = seq(0,20,4), minor_breaks = waiver()) +
   scale_fill_manual(values = c("chartreuse2", "deepskyblue"),
                     labels = c("Ground", "Roof")) +
-  theme_light()
-
-unique_time_dodge + facet_grid(cols = vars(date)) +
   theme_bw()
 
-#ggsave("diversity_date.png", width = 8, height = 4, path = "../figs")
+ab_plot + facet_grid(cols = vars(date)) +
+  theme_bw()
+
+ggsave("avg_abundance_date.png", width = 8, height = 4, path = "../figs")
+
+
+div_plot <- ggplot2::ggplot(data = div_avg) +
+  geom_col(aes(x = avg,
+               y = order,
+               fill = level),
+           position = position_dodge()) +
+  labs(y = "Order/Subclass",
+       x = "Average # Morphospecies",
+       fill = "Level") +
+  scale_x_continuous(breaks = seq(0,8,2)) +
+  scale_fill_manual(values = c("chartreuse2", "deepskyblue"),
+                    labels = c("Ground", "Roof")) +
+  theme_bw()
+
+div_plot + facet_grid(cols = vars(date)) +
+  theme_bw()
+
+ggsave("avg_diversity_date.png", width = 8, height = 4, path = "../figs")
 
 ```
 
