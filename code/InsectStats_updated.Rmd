@@ -1,0 +1,401 @@
+---
+title: "Insect_Stats"
+author: "Megan Rosser"
+date: "2022-11-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+```
+
+```{r read data}
+
+insect_data <- read.csv("../data/identification.csv") %>%
+  dplyr::mutate(level = str_extract(position, "^\\w")) %>%
+  dplyr::mutate(position = str_extract(position, "(\\d)")) %>%
+  dplyr::mutate(position = as.factor(position)) %>%
+  dplyr::mutate(level = as.factor(level)) %>%
+  dplyr::mutate(date = as.factor(date)) 
+
+
+```
+
+Code below for diversity graph with ADDED position values
+
+```{r distinct data graph}
+unique_insects <- insect_data %>%
+  dplyr::select(order, family, morphospecies, level) %>%
+  dplyr::distinct() %>%
+  dplyr::mutate(order = as.factor(order)) %>%
+  dplyr::mutate(order = factor(order, levels = c("siphonaptera", "psocodea", "acari", "araneae", "collembola", "coleoptera", "thysanoptera", "hemiptera", "hymenoptera", "diptera")))
+
+
+unique_dodge <- ggplot2::ggplot(data = unique_insects) +
+  geom_bar(aes(y = order,
+               fill = level),
+           position = position_dodge2()) +
+  labs(y = "Order/Subclass",
+       x = "# Morphospecies",
+       fill = "Level") +
+  scale_x_continuous(breaks = seq(0,20,4)) +
+  scale_fill_manual(values = c("chartreuse2", "deepskyblue"),
+                    labels = c("Ground", "Roof")) +
+  theme_light()
+
+unique_dodge
+
+#ggsave("diversity_insect_plot1.png", path = "../figs")
+
+```
+
+Code below for abundance graph with ADDED position values
+
+```{r all data graph}
+all_insects <- insect_data %>%
+  dplyr::select(date, order, family, morphospecies, level) %>%
+  dplyr::mutate(order = as.factor(order)) %>%
+  dplyr::mutate(order = factor(order, levels = c("siphonaptera", "psocodea", "acari", "araneae", "collembola", "coleoptera", "thysanoptera", "hemiptera", "hymenoptera", "diptera"))) %>%
+  dplyr::mutate(date = factor(date, levels = c("25-Jun", "10-Jul", "23-Jul", "7-Aug")))
+
+
+all_dodge <- ggplot2::ggplot(data = all_insects) +
+  geom_bar(aes(y = order,
+               fill = level),
+           position = position_dodge2()) +
+  labs(y = "Order/Subclass",
+       x = "# Observations",
+       fill = "Level") +
+  scale_x_continuous(breaks = seq(0,150,20), minor_breaks = waiver()) +
+  scale_fill_manual(values = c("chartreuse2", "deepskyblue"),
+                    labels = c("Ground", "Roof")) +
+  theme_light()
+
+all_dodge
+
+#ggsave("abundance_insect_plot1.png", path = "../figs")
+
+```
+
+Code below for a graph representing the proportion of each insect order observed.
+
+```{r proportion fill graph}
+
+all_fill <- ggplot2::ggplot(data = all_insects) +
+  geom_bar(aes(y = order,
+               fill = level),
+           position = position_fill()) +
+  labs(y = "Class/Order") +
+  theme_light()
+
+all_fill
+
+```
+
+Code below for abundance and diversity graphs faceted by date with ADDED position values.
+
+```{r time faceted abundance data, fig.width= 8, fig.height = 4}
+all_dodge + facet_grid(cols = vars(date)) +
+  theme_bw()
+
+#ggsave("abundance_date.png", width = 8, height = 4, path = "../figs")
+
+unique_time_insects <- insect_data %>%
+  dplyr::select(date, order, family, morphospecies, level) %>%
+  dplyr::distinct() %>%
+  dplyr::mutate(order = as.factor(order)) %>%
+  dplyr::mutate(order = factor(order, levels = c("siphonaptera", "psocodea", "acari", "araneae", "collembola", "coleoptera", "thysanoptera", "hemiptera", "hymenoptera", "diptera"))) %>%
+  dplyr::mutate(date = factor(date, levels = c("25-Jun", "10-Jul", "23-Jul", "7-Aug")))
+
+
+unique_time_dodge <- ggplot2::ggplot(data = unique_time_insects) +
+  geom_bar(aes(y = order,
+               fill = level),
+           position = position_dodge2()) +
+  labs(y = "Order/Subclass",
+       x = "# Morphospecies",
+       fill = "Level") +
+  scale_x_continuous(breaks = seq(0,20,4)) +
+  scale_fill_manual(values = c("chartreuse2", "deepskyblue"),
+                    labels = c("Ground", "Roof")) +
+  theme_light()
+
+unique_time_dodge + facet_grid(cols = vars(date)) +
+  theme_bw()
+
+#ggsave("diversity_date.png", width = 8, height = 4, path = "../figs")
+
+```
+
+Code below for abundance and diversity graphs faceted by date with AVERAGED position values.
+
+```{r time faceted abundance data, fig.width= 8, fig.height = 4}
+all_dodge + facet_grid(cols = vars(date)) +
+  theme_bw()
+
+#ggsave("abundance_date.png", width = 8, height = 4, path = "../figs")
+
+unique_time_insects <- insect_data %>%
+  dplyr::select(date, order, family, morphospecies, level) %>%
+  dplyr::distinct() %>%
+  dplyr::mutate(order = as.factor(order)) %>%
+  dplyr::mutate(order = factor(order, levels = c("siphonaptera", "psocodea", "acari", "araneae", "collembola", "coleoptera", "thysanoptera", "hemiptera", "hymenoptera", "diptera"))) %>%
+  dplyr::mutate(date = factor(date, levels = c("25-Jun", "10-Jul", "23-Jul", "7-Aug")))
+
+
+unique_time_dodge <- ggplot2::ggplot(data = unique_time_insects) +
+  geom_bar(aes(y = order,
+               fill = level),
+           position = position_dodge2()) +
+  labs(y = "Order/Subclass",
+       x = "# Morphospecies",
+       fill = "Level") +
+  scale_x_continuous(breaks = seq(0,20,4)) +
+  scale_fill_manual(values = c("chartreuse2", "deepskyblue"),
+                    labels = c("Ground", "Roof")) +
+  theme_light()
+
+unique_time_dodge + facet_grid(cols = vars(date)) +
+  theme_bw()
+
+#ggsave("diversity_date.png", width = 8, height = 4, path = "../figs")
+
+```
+
+The diversity of the entire dataset below.
+
+```{r all data}
+
+insect_data %>%
+  group_by(order) %>%
+  summarise(family = n_distinct(family),
+            morphospecies = n_distinct(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+
+```
+
+Function to calculate insect diversity given level ("G" or "R"), date ("25-Jun", "10-Jul", "23-Jul", or "7-Aug"), and position (1, 2, or 3).
+
+```{r diversity function}
+
+div_func <- function(l, d, p){
+  div_summary <- insect_data %>%
+    dplyr::filter(level == l) %>%
+    dplyr::filter(date == d) %>%
+    dplyr::filter(position == p) %>%
+    dplyr::rename(class_order = order) %>%
+    group_by(class_order) %>%
+    summarise(family = n_distinct(family),
+              diversity_morphospecies = n_distinct(morphospecies),
+              .groups = "keep") %>%
+    ungroup()
+    return(div_summary)
+}
+
+
+```
+
+Same as function above but to calculate abundance instead of diversity.
+
+```{r abundance function}
+
+abund_func <- function(l, d, p){
+  ab_summary <- insect_data %>%
+    dplyr::filter(level == l) %>%
+    dplyr::filter(date == d) %>%
+    dplyr::filter(position == p) %>%
+    dplyr::rename(class_order = order) %>%
+    group_by(class_order) %>%
+    summarise(abundance_morphospecies = length(morphospecies),
+              .groups = "keep") %>%
+    ungroup()
+    return(ab_summary)
+}
+
+```
+
+Code to run functions. Numbers compiled in separate excel sheet.
+
+```{r run functions}
+
+div_func(l = "R", d = "7-Aug", p = 3)
+
+abund_func(l = "G", d = "7-Aug", p = 1)
+
+```
+
+Outdated code to calculate diversity and abundance without distinction of different positions.
+
+```{r ground level diversity}
+
+g1_div_data_25Jun <- insect_data %>%
+  dplyr::filter(level == "G") %>%
+  dplyr::filter(date == "25-Jun") %>%
+  dplyr::filter(position == 1) %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(family = n_distinct(family),
+            morphospeciesG1 = n_distinct(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+g_div_data_10Jul <- insect_data %>%
+  dplyr::filter(level == "G") %>%
+  dplyr::filter(date == "10-Jul") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(family = n_distinct(family),
+            morphospecies = n_distinct(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+g_div_data_23Jul <- insect_data %>%
+  dplyr::filter(level == "G") %>%
+  dplyr::filter(date == "23-Jul") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(family = n_distinct(family),
+            morphospecies = n_distinct(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+g_div_data_7Aug <- insect_data %>%
+  dplyr::filter(level == "G") %>%
+  dplyr::filter(date == "7-Aug") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(family = n_distinct(family),
+            morphospecies = n_distinct(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+  
+
+```
+
+```{r roof level diversity}
+r_div_data_25Jun <- insect_data %>%
+  dplyr::filter(level == "R") %>%
+  dplyr::filter(date == "25-Jun") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(family = n_distinct(family),
+            morphospecies = n_distinct(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+r_div_data_10Jul <- insect_data %>%
+  dplyr::filter(level == "R") %>%
+  dplyr::filter(date == "10-Jul") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(family = n_distinct(family),
+            morphospecies = n_distinct(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+r_div_data_23Jul <- insect_data %>%
+  dplyr::filter(level == "R") %>%
+  dplyr::filter(date == "23-Jul") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(family = n_distinct(family),
+            morphospecies = n_distinct(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+r_div_data_7Aug <- insect_data %>%
+  dplyr::filter(level == "R") %>%
+  dplyr::filter(date == "7-Aug") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(family = n_distinct(family),
+            morphospecies = n_distinct(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+```
+
+```{r ground level abundance}
+
+g_ab_data_25Jun <- insect_data %>%
+  dplyr::filter(level == "G") %>%
+  dplyr::filter(date == "25-Jun") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(morphospecies = length(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+g_ab_data_10Jul <- insect_data %>%
+  dplyr::filter(level == "G") %>%
+  dplyr::filter(date == "10-Jul") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(morphospecies = length(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+g_ab_data_23Jul <- insect_data %>%
+  dplyr::filter(level == "G") %>%
+  dplyr::filter(date == "23-Jul") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(morphospecies = length(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+g_ab_data_7Aug <- insect_data %>%
+  dplyr::filter(level == "G") %>%
+  dplyr::filter(date == "7-Aug") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(morphospecies = length(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+  
+
+```
+
+```{r roof level abundance}
+
+r_ab_data_25Jun <- insect_data %>%
+  dplyr::filter(level == "R") %>%
+  dplyr::filter(date == "25-Jun") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(morphospecies = length(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+r_ab_data_10Jul <- insect_data %>%
+  dplyr::filter(level == "R") %>%
+  dplyr::filter(date == "10-Jul") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(morphospecies = length(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+r_ab_data_23Jul <- insect_data %>%
+  dplyr::filter(level == "R") %>%
+  dplyr::filter(date == "23-Jul") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(morphospecies = length(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+r_ab_data_7Aug <- insect_data %>%
+  dplyr::filter(level == "R") %>%
+  dplyr::filter(date == "7-Aug") %>%
+  dplyr::rename(class_order = order) %>%
+  group_by(class_order) %>%
+  summarise(morphospecies = length(morphospecies),
+          .groups = "keep") %>%
+  ungroup()
+
+```
